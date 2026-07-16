@@ -40,4 +40,12 @@ export default [
       parser: tseslint.parser,
     },
   },
+
+  // Data-layer TypeScript conventions
+  {
+    files: ["db/**/*.ts", "src/lib/*.ts"],
+    rules: {
+      "@typescript-eslint/explicit-module-boundary-types": "error",
+    },
+  },
 ];

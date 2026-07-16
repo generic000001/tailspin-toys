@@ -55,6 +55,15 @@ export async function getAllGameIds(db: Database): Promise<number[]> {
 - Map raw rows to the app-facing `Game`/`Publisher`/`Category` types in one place; don't leak Drizzle row shapes into components.
 - Keep ordering/lookup logic in `games.ts`, not in pages.
 
+## Documentation and Comments
+
+- Every **exported function** in `db/**/*.ts` and `src/lib/*.ts` must include TSDoc/JSDoc.
+- Required tags for exported functions:
+  - `@param` for every parameter (including the injectable `db` argument where applicable)
+  - `@returns` describing the resolved return value or side effect (`Promise<void>`, etc.)
+- Write docs for intent and behavior (invariants, determinism guarantees, non-obvious tradeoffs), not literal implementation steps.
+- When editing code, update or remove outdated comments in the same change.
+
 ## Determinism
 
 Seed-derived values must be reproducible across builds. Derive star ratings from a stable hash of the title (`ratingFromTitle`) — **never** `Math.random()`.
@@ -67,3 +76,7 @@ Unit-test transforms directly and helpers against `createTestDatabase()`. See [`
 
 The data layer (`db/**/*.ts`, `src/lib/*.ts`) is type-checked by `npm run typecheck`, which runs the native **TypeScript 7** compiler (`tsgo`, from `@typescript/native-preview`) against `tsconfig.tsgo.json`. Keep helpers exported with explicit parameter and return types so `tsgo` can verify them. Linting is unaffected — ESLint + `typescript-eslint` still run on the classic `typescript` package.
 
+## TypeScript Linting Conventions
+
+- TypeScript style and safety rules are enforced by ESLint.
+- Data-layer files (`db/**/*.ts`, `src/lib/*.ts`) must use explicit return types on functions, including module-boundary exports.
