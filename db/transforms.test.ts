@@ -56,6 +56,12 @@ describe('parseGamesCsv', () => {
         const rows = parseGamesCsv('Title,Category,Publisher,Description\n,,,');
         expect(rows).toHaveLength(0);
     });
+
+    it('parses files with a UTF-8 BOM header', () => {
+        const rows = parseGamesCsv('\uFEFFTitle,Category,Publisher,Description\n"Game C","Action","Pub Three","Desc C"');
+        expect(rows).toHaveLength(1);
+        expect(rows[0]?.title).toBe('Game C');
+    });
 });
 
 describe('description helpers', () => {

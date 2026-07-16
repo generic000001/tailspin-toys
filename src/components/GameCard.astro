@@ -2,12 +2,22 @@
 import type { Game } from '../types/game';
 import Tag from './Tag.astro';
 import ArrowRight from '../assets/icons/arrow-right.svg';
+import { clampRating } from '../lib/ratings';
 
 interface Props {
     game: Game;
 }
 
 const { game } = Astro.props;
+const clampedRating = game.starRating === null ? null : clampRating(game.starRating);
+const roundedRating =
+    clampedRating === null
+        ? null
+        : Math.floor(clampedRating) + (clampedRating % 1 >= 0.5 ? 0.5 : 0);
+const starFillLevels =
+    roundedRating === null
+        ? []
+        : Array.from({ length: 5 }, (_, index) => Math.max(0, Math.min(1, roundedRating - index)));
 ---
 
 <a
@@ -38,6 +48,22 @@ const { game } = Astro.props;
             )}
 
             <p class="text-slate-400 mb-4 text-sm line-clamp-2" data-testid="game-description">{game.description}</p>
+            <p class="text-slate-300 mb-4 text-sm" data-testid="game-star-rating">
+                {game.starRating !== null ? (
+                    <span class="inline-flex items-center gap-0.5" aria-label={`Rated ${game.starRating} out of 5 stars`}>
+                        {starFillLevels.map((fill) => (
+                            <span class="relative inline-block h-4 w-4 leading-none" aria-hidden="true">
+                                <span class="absolute inset-0 text-slate-600">★</span>
+                                <span class="absolute inset-y-0 left-0 overflow-hidden text-yellow-400" style={`width: ${fill * 100}%`}>
+                                    ★
+                                </span>
+                            </span>
+                        ))}
+                    </span>
+                ) : (
+                    'No rating yet'
+                )}
+            </p>
 
             <div class="mt-4 text-sm text-blue-400 font-medium flex items-center">
                 <span>View details</span>
