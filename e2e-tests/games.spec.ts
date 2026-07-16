@@ -24,6 +24,61 @@ test.describe('Game Listing and Navigation', () => {
     });
   });
 
+  test('should filter games by category and publisher together', async ({ page }) => {
+    await test.step('Navigate to homepage and capture initial game count', async () => {
+      await page.goto('/');
+      const allGameCards = page.getByTestId('game-card');
+      expect(await allGameCards.count()).toBeGreaterThan(0);
+    });
+
+    await test.step('Apply strategy category and CodeForge publisher filters', async () => {
+      await page.locator('label', { hasText: 'Strategy' }).locator('input[type="checkbox"]').check();
+      await page.getByTestId('publisher-filter').selectOption({ label: 'CodeForge Studios' });
+    });
+
+    await test.step('Verify only matching game cards remain visible', async () => {
+      const visibleCards = page.locator('[data-testid="game-card"]:visible');
+      await expect(visibleCards).toHaveCount(1);
+      await expect(visibleCards.first().getByTestId('game-category')).toHaveText('Strategy');
+      await expect(visibleCards.first().getByTestId('game-publisher')).toHaveText('CodeForge Studios');
+      await expect(page.getByTestId('filter-results-status')).toContainText('Showing 1 of');
+      await expect(page).toHaveURL(/category=\d+/);
+      await expect(page).toHaveURL(/publisher=\d+/);
+    });
+  });
+
+  test('should support filtering by multiple categories and clearing filters', async ({ page }) => {
+    let totalCards = 0;
+
+    await test.step('Navigate to homepage and record total card count', async () => {
+      await page.goto('/');
+      totalCards = await page.getByTestId('game-card').count();
+      expect(totalCards).toBeGreaterThan(0);
+    });
+
+    await test.step('Apply Action and Puzzle category filters', async () => {
+      await page.locator('label', { hasText: 'Action' }).locator('input[type="checkbox"]').check();
+      await page.locator('label', { hasText: 'Puzzle' }).locator('input[type="checkbox"]').check();
+      await page.getByTestId('publisher-filter').selectOption({ label: 'GitHub Games' });
+    });
+
+    await test.step('Verify visible cards match selected categories and publisher', async () => {
+      const visibleCards = page.locator('[data-testid="game-card"]:visible');
+      await expect(visibleCards).toHaveCount(2);
+
+      for (let i = 0; i < 2; i++) {
+        const card = visibleCards.nth(i);
+        await expect(card.getByTestId('game-publisher')).toHaveText('GitHub Games');
+      }
+    });
+
+    await test.step('Clear filters and verify all cards become visible again', async () => {
+      await page.getByTestId('clear-filters-button').click();
+      await expect(page.locator('[data-testid="game-card"]:visible')).toHaveCount(totalCards);
+      await expect(page).toHaveURL('/');
+    });
+  });
+
   test('should navigate to correct game details page when clicking on a game', async ({ page }) => {
     let gameId: string | null;
     let gameTitle: string | null;
