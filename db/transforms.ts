@@ -73,7 +73,8 @@ export function parseCsv(content: string): Record<string, string>[] {
         return [];
     }
 
-    const [header, ...rows] = records;
+    const [rawHeader, ...rows] = records;
+    const header = rawHeader.map((key) => key.replace(/^\uFEFF/, '').trim());
     return rows.map((row) => {
         const entry: Record<string, string> = {};
         header.forEach((key, index) => {
